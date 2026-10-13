@@ -47,3 +47,11 @@ python layout_bench.py     # layout and dtype table
 - Single machine; absolute numbers will differ elsewhere, ratios should hold roughly.
 - Loops and NumPy versions are written for clarity, not tuned.
 - Resize NumPy version builds temporary arrays via fancy indexing; a tuned version would be faster.
+
+## Interview Hour
+
+“Why is a NumPy operation so much faster than the same loop in Python?”
+- A python loop is slow mainly due to overhead from the interpretor which adds significant time. Numpy operations on the other hand use compiled c code to run calculations and has same-typed numbers lined up in contiguous memory blocks avoiding any slow overhead. It also utilizes SIMD instructions which allow multiple values in a single instruction.
+
+"Why does HWC against CHW matter for a model’s input"
+- Mostly it’s convention: PyTorch models expect RGB, CHW tensors. Converting from cv2’s HWC means a transpose, which is just a view, followed by a copy to make it contiguous in the new order. In my benchmark that copy cost about 0.2 ms, and a per-channel mean on the contiguous CHW array was 27× faster than on the HWC data, because each channel’s values are stored together.
