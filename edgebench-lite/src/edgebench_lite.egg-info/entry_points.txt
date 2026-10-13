@@ -1,0 +1,2 @@
+[console_scripts]
+imgstat = edgebench_lite.imgstat:main
