@@ -55,3 +55,6 @@ python layout_bench.py     # layout and dtype table
 
 "Why does HWC against CHW matter for a model’s input"
 - Mostly it’s convention: PyTorch models expect RGB, CHW tensors. Converting from cv2’s HWC means a transpose, which is just a view, followed by a copy to make it contiguous in the new order. In my benchmark that copy cost about 0.2 ms, and a per-channel mean on the contiguous CHW array was 27× faster than on the HWC data, because each channel’s values are stored together.
+
+"How did you check that your NumPy and loop versions were correct?"
+- I treated OpenCV as the reference implementation. For grayscale, blur and resize, I wrote a pytest test that generates a small random image (fixed seed, so it’s repeatable), runs my loop version, my NumPy version and the cv2 version, and asserts the maximum pixel difference is at most 1–2. It’s not exactly 0 because cv2 uses fixed-point integer arithmetic and rounds slightly differently. I also added property checks: resizing to the same size must return the original image, blurring a constant image must leave it unchanged, and outputs must have the right shape and dtype. The identity test caught a real bug, where my loop resize read past the last pixel because I’d forgotten to clamp the indices. CI runs all of this on every push.
