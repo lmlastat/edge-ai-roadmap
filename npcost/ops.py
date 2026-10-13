@@ -93,6 +93,9 @@ def resize_loop(gray: np.ndarray, out_h: int = 224, out_w: int = 224) -> np.ndar
             y0 = int(math.floor(sy)); x0 = int(math.floor(sx))
             fy = sy - y0;         fx = sx - x0
             y1 = y0 + 1;          x1 = x0 + 1
+
+            y0 = np.clip(y0, 0, in_h - 1);  y1 = np.clip(y1, 0, in_h - 1)  # clamp all four AFTER computing fy, fx
+            x0 = np.clip(x0, 0, in_w - 1);  x1 = np.clip(x1, 0, in_w - 1)
             # clamp y0, y1, x0, x1 into range (step 3)
             A = float(gray[y0, x0]); B = float(gray[y0, x1]); C = float(gray[y1, x0]); D = float(gray[y1, x1])
             top = A * (1 - fx) + B * fx
