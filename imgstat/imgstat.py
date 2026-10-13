@@ -7,6 +7,10 @@ from dataclasses import dataclass
 
 from PIL import Image
 
+import logging
+log = logging.getLogger(__name__)
+
+
 @dataclass
 class ImageInfo:
     path: Path
@@ -18,6 +22,7 @@ class ImageInfo:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Summarize a folder of images.")
     parser.add_argument("folder", type=Path, help="folder to scan")
+    parser.add_argument("-v", "--verbose", action="store_true", help="enable debug logging")
     return parser.parse_args()
 
 def iter_images(folder: Path) -> Iterator[Path]:
@@ -64,6 +69,7 @@ def populate_infos(images: list[Path]) -> tuple[list[ImageInfo], list[tuple[Path
     infos = []
     corrupt_list = []
     for image in images:
+        log.debug(f"Processing {image}")
         try:
             width, height = get_size(image)
             digest = get_hex_digest(image)
@@ -75,16 +81,23 @@ def populate_infos(images: list[Path]) -> tuple[list[ImageInfo], list[tuple[Path
     return infos, corrupt_list
 
 def main() -> None:
+    
+
     args = parse_args()
+
+    logging.basicConfig(
+            level=logging.DEBUG if args.verbose else logging.INFO,
+            format="%(levelname)s %(message)s",
+       )
     if not args.folder.is_dir():
-        print(f"{args.folder} is not a folder")
+        log.error(f"{args.folder} is not a folder")
         return
 
-    print(f"Scanning {args.folder}")
+    log.info(f"Scanning {args.folder}")
 
 
     images = list(iter_images(args.folder))
-    print(f"Found {len(images)} images")
+    log.info(f"Found {len(images)} images")
 
     infos, corrupt_list = populate_infos(images)
 
